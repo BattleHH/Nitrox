@@ -83,7 +83,8 @@ namespace NitroxServer.Serialization.World
                                           persistedData.PlayerData,
                                           persistedData.GameData,
                                           persistedData.ParsedBatchCells,
-                                          new EscapePodData());
+                                          new EscapePodData(),
+                                          config.GameMode);
 
                     persistedData.version = 5;
 
@@ -99,7 +100,8 @@ namespace NitroxServer.Serialization.World
                                         persistedData.PlayerData,
                                         persistedData.GameData,
                                         persistedData.ParsedBatchCells,
-                                        persistedData.EscapePodData);
+                                        persistedData.EscapePodData,
+                                        config.GameMode);
                 }
 
                 return Optional<World>.Of(world);
