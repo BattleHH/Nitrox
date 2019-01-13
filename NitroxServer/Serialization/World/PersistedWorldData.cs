@@ -14,6 +14,7 @@ namespace NitroxServer.Serialization.World
     [ProtoContract]
     public class PersistedWorldData
     {
+        private const long SAVEPATCHER_VERSION = 4;
         private const long CURRENT_VERSION = 5;
 
         [ProtoMember(1)]
@@ -50,7 +51,7 @@ namespace NitroxServer.Serialization.World
         {
             if(version < CURRENT_VERSION)
             {
-                if (version == 4)
+                if (version == SAVEPATCHER_VERSION|| version == 6)
                 {
                     return true;
 

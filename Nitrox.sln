@@ -36,6 +36,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NitroxInstallerActions", "N
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NitroxServer.Wpf", "NitroxServer.Wpf\NitroxServer.Wpf.csproj", "{DECAAD61-2567-468D-97DC-771FB46BD4DA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NitroxSaveFilePatcher", "NitroxSaveFilePatcher\NitroxSaveFilePatcher.csproj", "{B6D6437B-ABEF-45F2-AD6C-F086F4718ABC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -186,6 +188,18 @@ Global
 		{DECAAD61-2567-468D-97DC-771FB46BD4DA}.Release|x64.Build.0 = Release|Any CPU
 		{DECAAD61-2567-468D-97DC-771FB46BD4DA}.Release|x86.ActiveCfg = Release|Any CPU
 		{DECAAD61-2567-468D-97DC-771FB46BD4DA}.Release|x86.Build.0 = Release|Any CPU
+		{B6D6437B-ABEF-45F2-AD6C-F086F4718ABC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6D6437B-ABEF-45F2-AD6C-F086F4718ABC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6D6437B-ABEF-45F2-AD6C-F086F4718ABC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B6D6437B-ABEF-45F2-AD6C-F086F4718ABC}.Debug|x64.Build.0 = Debug|Any CPU
+		{B6D6437B-ABEF-45F2-AD6C-F086F4718ABC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B6D6437B-ABEF-45F2-AD6C-F086F4718ABC}.Debug|x86.Build.0 = Debug|Any CPU
+		{B6D6437B-ABEF-45F2-AD6C-F086F4718ABC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6D6437B-ABEF-45F2-AD6C-F086F4718ABC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6D6437B-ABEF-45F2-AD6C-F086F4718ABC}.Release|x64.ActiveCfg = Release|Any CPU
+		{B6D6437B-ABEF-45F2-AD6C-F086F4718ABC}.Release|x64.Build.0 = Release|Any CPU
+		{B6D6437B-ABEF-45F2-AD6C-F086F4718ABC}.Release|x86.ActiveCfg = Release|Any CPU
+		{B6D6437B-ABEF-45F2-AD6C-F086F4718ABC}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,34 +1,57 @@
-﻿using NitroxModel.DataStructures.Util;
+﻿using System;
+using System.Collections.Generic;
 using NitroxModel.Logger;
+using NitroxServer.Serialization.World;
+using NitroxServer.ConfigParser;
+using NitroxModel.DataStructures.Util;
+using System.IO;
+using NitroxServer.Serialization;
+using NitroxServer.GameLogic.Entities;
+using NitroxServer.GameLogic.Items;
+using NitroxServer.GameLogic.Vehicles;
 using NitroxServer.GameLogic;
 using NitroxServer.GameLogic.Bases;
-using NitroxServer.GameLogic.Entities;
 using NitroxServer.GameLogic.Entities.Spawning;
-using NitroxServer.GameLogic.Items;
 using NitroxServer.GameLogic.Players;
-using NitroxServer.GameLogic.Vehicles;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using NitroxServer.GameLogic.Unlockables;
-using NitroxServer.ConfigParser;
+using NitroxModel;
 
-namespace NitroxServer.Serialization.World
+
+namespace NitroxSaveFilePatcher
 {
-    public class WorldPersistence
+
+
+    class Patcher
     {
         private readonly ServerProtobufSerializer serializer = new ServerProtobufSerializer();
+        //private readonly World world;
+        //private readonly WorldPersistence worldPersistence;
         private readonly string fileName = @"save.nitrox";
+        private readonly string fileName_backup = @"save_backup.nitrox";
         private readonly ServerConfig config;
-
-        public WorldPersistence(ServerConfig config)
+       // public bool Upgraded = false; 
+        //public WorldPersistence(ServerConfig config)
+        //{
+        //     this.config = config;
+        //}
+        public bool Patching()
         {
-            this.config = config;
-        }
+            World world = LoadFromFile();
 
+            if(Program.UpgradeWorld == true)
+            {
+
+                Save(world);
+                return true;
+            }
+            
+           
+
+            return false;
+        }
         public void Save(World world)
         {
-            Log.Info("Saving world state.");
+            //Log.Info("Saving world state.");
 
             try
             {
@@ -55,13 +78,43 @@ namespace NitroxServer.Serialization.World
                 Log.Info("Could not save world: " + ex);
             }
         }
-
-        private Optional<World> LoadFromFile()
+        public void SaveBackup(World world)
         {
+            //Log.Info("Saving world state.");
+
+            try
+            {
+                PersistedWorldData persistedData = new PersistedWorldData();
+                persistedData.ParsedBatchCells = world.BatchEntitySpawner.SerializableParsedBatches;
+                persistedData.ServerStartTime = world.TimeKeeper.ServerStartTime;
+                persistedData.EntityData = world.EntityData;
+                persistedData.BaseData = world.BaseData;
+                persistedData.VehicleData = world.VehicleData;
+                persistedData.InventoryData = world.InventoryData;
+                persistedData.PlayerData = world.PlayerData;
+                persistedData.GameData = world.GameData;
+                persistedData.EscapePodData = world.EscapePodData;
+
+                using (Stream stream = File.OpenWrite(fileName_backup))
+                {
+                    serializer.Serialize(stream, persistedData);
+                }
+
+                Log.Info("World state saved.");
+            }
+            catch (Exception ex)
+            {
+                Log.Info("Could not save world: " + ex);
+            }
+        }
+
+        public World LoadFromFile()
+        {
+            World world;
             try
             {
                 PersistedWorldData persistedData;
-                World world = null;
+
                 using (Stream stream = File.OpenRead(fileName))
                 {
                     persistedData = serializer.Deserialize<PersistedWorldData>(stream);
@@ -72,8 +125,8 @@ namespace NitroxServer.Serialization.World
                     throw new InvalidDataException("Persisted state is not valid");
                 }
 
-                // IF SaveFile Version 4 CreateWorld with new EscapePodData and Set Version to 5 and 6
-                if (persistedData.version == 4 || persistedData.version == 5)
+                // IF SaveFile Version 4 CreateWorld with new EscapePodData and Set Version to 5
+                if (persistedData.version == 4)
                 {
                     world = CreateWorld(persistedData.ServerStartTime,
                                           persistedData.EntityData,
@@ -85,16 +138,11 @@ namespace NitroxServer.Serialization.World
                                           persistedData.ParsedBatchCells,
                                           new EscapePodData(),
                                           config.GameMode);
-                    if(persistedData.version == 4)
-                    {
-                        persistedData.version = 5;
-                        Log.Info("Save file Version 4 Upgradet to Version 5, EXPERIMENTAL!!");
-                    }
-                    else
-                    {
-                        persistedData.version = 6;
-                        Log.Info("Save file Version 5 Upgradet to Version 6, EXPERIMENTAL!!");
-                    }
+
+                    persistedData.version = 5;
+                    
+                    Program.UpgradeWorld = true;
+                    //Log.Info("Save file Version 4 Upgradet to Version 5, EXPERIMENTAL!!");
                 }
                 else
                 {
@@ -110,7 +158,7 @@ namespace NitroxServer.Serialization.World
                                         config.GameMode);
                 }
 
-                return Optional<World>.Of(world);
+                return world;
             }
             catch (FileNotFoundException ex)
             {
@@ -119,22 +167,25 @@ namespace NitroxServer.Serialization.World
             catch (Exception ex)
             {
                 Log.Info("Could not load world: " + ex.ToString() + " creating a new one.");
+
+                Program.FreshWorld = true;
+                return CreateFreshWorld();
             }
 
-            return Optional<World>.Empty();
+            return null;
         }
 
-        public World Load()
-        {
-            Optional<World> fileLoadedWorld = LoadFromFile();
+        //public World Load()
+        //{
+        //    World fileLoadedWorld = LoadFromFile();
 
-            if (fileLoadedWorld.IsPresent())
-            {
-                return fileLoadedWorld.Get();
-            }
+        //    if (fileLoadedWorld.IsPresent())
+        //    {
+        //        return fileLoadedWorld.Get();
+        //    }
 
-            return CreateFreshWorld();
-        }
+        //    return CreateFreshWorld();
+        //}
 
         private World CreateFreshWorld()
         {
@@ -144,12 +195,12 @@ namespace NitroxServer.Serialization.World
 
         private World CreateWorld(DateTime serverStartTime,
                                   EntityData entityData,
-                                  BaseData baseData,
+                                  NitroxServer.GameLogic.Bases.BaseData baseData,
                                   VehicleData vehicleData,
                                   InventoryData inventoryData,
                                   PlayerData playerData,
                                   GameData gameData,
-                                  List<Int3> ParsedBatchCells,
+                                  List<Int3> parsedBatchCells,
                                   EscapePodData escapePodData,
                                   GameModeOption gameMode)
         {
@@ -172,7 +223,7 @@ namespace NitroxServer.Serialization.World
             world.GameMode = gameMode;
 
             ResourceAssets resourceAssets = ResourceAssetsParser.Parse();
-            world.BatchEntitySpawner = new BatchEntitySpawner(resourceAssets, ParsedBatchCells);
+            world.BatchEntitySpawner = new BatchEntitySpawner(resourceAssets, parsedBatchCells);
 
             return world;
         }
